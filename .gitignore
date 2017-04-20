@@ -1,0 +1,6 @@
+dist/
+migrations/
+.idea/
+node_modules/
+yarn.lock
+.mig.json
