@@ -71,14 +71,14 @@ const configStorage = new Proxy(new Config(), {
   },
 });
 
-export function loadConfig(configPath = '.mig.json') {
+export function loadConfig(configPath = '.abstract-migrate.json') {
   let config = {};
   try {
     config = require(path.join(process.cwd(), configPath));
   } catch (err) {
     if (err.message.match(/^Cannot find module/)) {
       // Only throw this message if they provided a config file
-      if (configPath !== '.mig.json') {
+      if (configPath !== '.abstract-migrate.json') {
         console.error([
           chalk.red.bold('Error:'),
           'No config file located at',

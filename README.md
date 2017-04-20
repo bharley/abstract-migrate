@@ -6,7 +6,7 @@ Abstract migrate is a data-agnostic tool for running scripts (e.g., migrations) 
 
 Install with `yarn`:
  
-    $ yarn add -g abstract-migrate
+    $ yarn global add abstract-migrate
  
  or `npm`:
      
@@ -14,7 +14,7 @@ Install with `yarn`:
 
 Now you can execute the provided CLI interface:
 
-    $ mig --help
+    $ am --help
 
 ### Create an Engine
 
@@ -70,10 +70,10 @@ immediately resolving your `acquireLock` function to `true`.
 ### Configuration
 
 Now that you have your engine, you will need to tell `abstract-migrate` how to use it. You can
-configure this library via the command line interface (see the CLI help output `mig --help`) or via
+configure this library via the command line interface (see the CLI help output `am --help`) or via
 a JSON file. Using the JSON file is the recommended option. By default, this library will look for
-a file named `.mig.json`, but you can configure this location using the CLI. The configuration file
-accepts the following options:
+a file named `.abstract-migrate.json`, but you can configure this location using the CLI. The
+configuration file accepts the following options:
 
  - **engine**: The migration storage engine to use
  - **require**: A JavaScript file (or array of files) to require before running
@@ -81,7 +81,7 @@ accepts the following options:
  - **noColor**: Disables color output (default: `false`)
  - **migrationPath**: The directory where migration files are stored (default: `migrations`)
 
-#### Example `.mig.json`
+#### Example `.abstract-migrate.json`
 
 ```json
 {
@@ -96,7 +96,7 @@ accepts the following options:
 
 #### create 
 
-    $ mig create my-cool-migration
+    $ am create my-cool-migration
 
 This command will create a migration of the given name in the migrations folder. The migration will
 be a simple file that exports an `up` and `down` function. The `up` and `down` functions can either
@@ -104,14 +104,14 @@ return a promise or call the provided callback function.
 
 #### list (alias: ls)
 
-    $ mig list
+    $ am list
 
 This command will list all of the migrations in the migration directory and denote whether or not a
 given migration has been run.
 
 #### up
 
-    $ mig up
+    $ am up
 
 This command will run all of the unran migrations. By default, this won't run migrations which are
 older than the most previously applied migration. This behavior can be modified with the
@@ -119,21 +119,21 @@ older than the most previously applied migration. This behavior can be modified 
 
 You can specify a migration name to migrate _up to and including_ the named migration:
 
-    $ mig up 1492708337968-my-cool-migration
+    $ am up 1492708337968-my-cool-migration
 
 or specifying the number of migrations to apply:
 
-    $ mig up 2
+    $ am up 2
 
 You can pass the `--dry-run` (`-d`) flag to preview which migrations will be run.
 
 #### down
 
-    $ mig down 2
+    $ am down 2
 
 This command will roll back the specified number of migrations. You can also specify a migration
 name to migrate _down to and including_ the named migration:
 
-    $ mig down 1492708337968-my-cool-migration
+    $ am down 1492708337968-my-cool-migration
 
 You can pass the `--dry-run` (`-d`) flag to preview which migrations will be run down.

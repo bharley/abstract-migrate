@@ -3,4 +3,4 @@ migrations/
 .idea/
 node_modules/
 yarn.lock
-.mig.json
+.abstract-migrate.json

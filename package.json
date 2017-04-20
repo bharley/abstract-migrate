@@ -4,7 +4,8 @@
   "description": "Storage-agnostic migration runner",
   "main": "./dist/index.js",
   "bin": {
-    "mig": "./bin/cli.js"
+    "am": "./bin/cli.js",
+    "abstract-migrate": "./bin/cli.js"
   },
   "scripts": {
     "prepublish": "npm run build",

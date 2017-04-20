@@ -1,5 +1,5 @@
 .git*
 npm-debug.log
 .idea
-.mig.json
+.abstract-migrate.json
 migrations/
