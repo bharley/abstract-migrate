@@ -39,7 +39,11 @@ const configStorage = new Proxy(new Config(), {
           value = [value];
         }
         value.forEach((module) => {
-          require(module);
+          if (module.indexOf('./') === 0) {
+            require(path.join(process.cwd(), module));
+          } else {
+            require(module);
+          }
         });
         target.config.require = [
           ...target.config.require,

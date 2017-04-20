@@ -1,11 +1,10 @@
 import fs from 'fs';
 import path from 'path';
-import Promise from 'bluebird';
 import chalk from 'chalk';
 import config from '../config';
 import storage from './storage';
 import { nameOrNumber } from './arguments';
-import { promiseback } from './promise';
+import { mapSeries, promiseback } from './promise';
 
 export const DIRECTION_UP = 'direction/up';
 export const DIRECTION_DOWN = 'direction/down';
@@ -155,7 +154,7 @@ export async function framework(direction, name, options) {
 
   try {
     // Run the migrations serially
-    const ranMigrations = await Promise.mapSeries(
+    const ranMigrations = await mapSeries(
       migrationsToRun,
       async (file) => {
         try {

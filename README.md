@@ -87,7 +87,7 @@ configuration file accepts the following options:
 {
   "engine": "./src/postgresEngine.js",
   "require": "babel-require",
-  "migrations": "db/migrations",
+  "migrationPath": "db/migrations",
   "noColor": true
 }
 ```
