@@ -163,47 +163,50 @@ const mapWords = direction => topic => wordMap[topic][direction];
 export async function framework(direction, name, options) {
   const t = mapWords(direction);
   const UP = direction === DIRECTION_UP;
+  const needsLock = !options.dryRun;
 
   console.log(chalk.gray(t('intro')));
 
-  const nameValue = nameOrNumber(name);
-  const migrationsToRun = await needsToRun(
-    direction,
-    {
-      ignorePast: UP ? options.ignorePast : undefined,
-      until: typeof nameValue !== 'number' ? nameValue : null,
-      count: typeof nameValue === 'number' ? nameValue : null,
+  if (needsLock) {
+    // Attempt to acquire a lock before we figure out what to run
+    const lockAcquired = await storage.acquireLock();
+    if (!lockAcquired) {
+      console.log(
+        chalk.yellow.bold('Could not lock')
+        + chalk.yellow(' Lock could not be acquired, quitting')
+      );
+      return;
     }
-  );
-
-  if (!migrationsToRun.length) {
-    console.log(t('nothing'));
-    return;
-  }
-
-  // If they're asking for a dry run, print it and exit
-  if (options.dryRun) {
-    console.log(
-      chalk.yellow.bold('Dry run')
-      + chalk.yellow(' No migrations will be executed')
-    );
-    migrationsToRun.forEach((file) => {
-      console.log('[✓] ' + chalk.cyan(file));
-    });
-    return;
-  }
-
-  // Attempt to acquire a lock
-  const lockAcquired = await storage.acquireLock();
-  if (!lockAcquired) {
-    console.log(
-      chalk.yellow.bold('Could not lock')
-      + chalk.yellow(' Lock could not be acquired, quitting')
-    );
-    return;
   }
 
   try {
+    const nameValue = nameOrNumber(name);
+    const migrationsToRun = await needsToRun(
+      direction,
+      {
+        ignorePast: UP ? options.ignorePast : undefined,
+        until: typeof nameValue !== 'number' ? nameValue : null,
+        count: typeof nameValue === 'number' ? nameValue : null,
+      }
+    );
+
+    if (!migrationsToRun.length) {
+      console.log(t('nothing'));
+      return;
+    }
+
+    // If they're asking for a dry run, print it and exit
+    if (options.dryRun) {
+      console.log(
+        chalk.yellow.bold('Dry run')
+        + chalk.yellow(' No migrations will be executed')
+      );
+      migrationsToRun.forEach((file) => {
+        console.log('[✓] ' + chalk.cyan(file));
+      });
+      return;
+    }
+
     // Record time once so rollback functions properly
     const now = Date.now();
 
@@ -234,7 +237,9 @@ export async function framework(direction, name, options) {
       await storage.remove(ranMigrations);
     }
   } finally {
-    // Always release the lock
-    await storage.releaseLock();
+    if (needsLock) {
+      // Always release the lock
+      await storage.releaseLock();
+    }
   }
 }
