@@ -9,7 +9,7 @@
   },
   "scripts": {
     "prepublish": "npm run build",
-    "build": "babel src --out-dir dist",
+    "build": "rm -fr dist && babel src --out-dir dist --ignore scsslint",
     "test": "mocha --compilers js:babel-core/register 'test/**/*.js'",
     "lint": "eslint bin src test"
   },
