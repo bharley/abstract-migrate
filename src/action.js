@@ -26,10 +26,13 @@ export default function actionWrapper(action) {
       if (config.debug) {
         console.error(err.stack);
       }
-      return;
+
+      return process.exit(1);
     }
 
     const executionTime = formatRuntime(Date.now() - startTime);
     console.log(chalk.green('Success') + ` (${executionTime})`);
+
+    return process.exit(0);
   };
 }
