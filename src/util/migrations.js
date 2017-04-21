@@ -27,7 +27,7 @@ export async function loadFromFs(migrationPath) {
 }
 
 export async function run(filename, direction) {
-  const migration = require(path.join(process.cwd(), config.migrationPath, filename));
+  const migration = require(path.join(config.migrationPath, filename));
 
   if (direction === DIRECTION_UP) {
     await promiseback(migration.up);

@@ -4,7 +4,7 @@ import chalk from 'chalk';
 class Config {
   config = {
     debug: false,
-    migrationPath: 'migrations',
+    migrationPath: path.resolve('migrations'),
     require: [],
     timeout: 30 * 1000,
   };
