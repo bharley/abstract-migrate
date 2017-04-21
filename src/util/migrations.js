@@ -98,6 +98,10 @@ export function filterDown(ranMigrations, files, { until, count }) {
 export async function needsToRun(direction, options) {
   // Fetch the migrations we've ran and the ones that are available
   const ranMigrations = await storage.load();
+
+  // Sort the ran migrations by their name -- newest migration first
+  ranMigrations.sort(({ name: left }, { name: right }) => right.localeCompare(left));
+
   const files = await loadFromFs(config.migrationPath);
 
   if (direction === DIRECTION_UP) {
