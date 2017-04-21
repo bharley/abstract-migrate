@@ -29,8 +29,8 @@ program
   .command('up [migration|num]')
   .description('runs all of the migrations (optionally only up to and including a named one or count)')
   .option(
-    '-p, --past-unran',
-    'include migrations from the past that have not ran yet (' + chalk.red('dangerous') + ')'
+    '-p, --ignore-past',
+    'ignore old migrations from the past that have not ran yet'
   )
   .option('-d, --dry-run', 'lists the migrations that will be executed')
   .action(actionWrapper(up));

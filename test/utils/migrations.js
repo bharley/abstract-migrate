@@ -92,23 +92,16 @@ describe('utils/migrations', () => {
       expect(filterUp(ranMigrations, files, {})).to.deep.equal(files);
     });
 
-    it('should select unran migrations that come after the most recently ran migration', () => {
-      const files = mn(5);
+    it('should optionally ignore previously unran migrations', () => {
+      const files = mn(6);
       const ranMigrations = [
         { name: files[2], timestamp: fakeTime() },
         { name: files[1], timestamp: fakeTime() },
       ];
 
-      expect(filterUp(ranMigrations, files, {})).to.deep.equal(files.slice(3));
-    });
-
-    it('should have nothing to migrate if the most recent migration has ran', () => {
-      const files = mn(10);
-      const ranMigrations = [
-        { name: files[files.length - 1], timestamp: fakeTime() },
-      ];
-
-      expect(filterUp(ranMigrations, files, {})).to.deep.equal([]);
+      expect(filterUp(ranMigrations, files, { ignorePast: true })).to.deep.equal(
+        files.slice(3)
+      );
     });
 
     it('should optionally only run migrations up to (and including) the named one', () => {
@@ -119,12 +112,20 @@ describe('utils/migrations', () => {
         files.slice(0, 4)
       );
 
+      ranMigrations = [
+        { name: files[0], timestamp: fakeTime() },
+      ];
+
+      expect(filterUp(ranMigrations, files, { until: files[3] })).to.deep.equal(
+        files.slice(1, 4)
+      );
+
       files = mn(6);
       ranMigrations = [
         { name: files[2], timestamp: fakeTime() },
       ];
 
-      expect(filterUp(ranMigrations, files, { until: files[4] })).to.deep.equal(
+      expect(filterUp(ranMigrations, files, { until: files[4], ignorePast: true })).to.deep.equal(
         files.slice(3, 5)
       );
     });
@@ -137,27 +138,32 @@ describe('utils/migrations', () => {
         files.slice(0, 3)
       );
 
+      ranMigrations = [
+        { name: files[2], timestamp: fakeTime() },
+      ];
+
+      expect(filterUp(ranMigrations, files, { count: 7 })).to.deep.equal([
+        ...files.slice(0, 2),
+        ...files.slice(3, 8),
+      ]);
+
       files = mn(10);
       ranMigrations = [
         { name: files[2], timestamp: fakeTime() },
       ];
 
-      expect(filterUp(ranMigrations, files, { count: 7 })).to.deep.equal(
+      expect(filterUp(ranMigrations, files, { count: 7, ignorePast: true })).to.deep.equal(
         files.slice(3, 10)
       );
     });
 
-    it('should optionally include previously unran migrations', () => {
-      const files = mn(6);
+    it('should optionally have nothing to migrate if the most recent migration has ran', () => {
+      const files = mn(10);
       const ranMigrations = [
-        { name: files[2], timestamp: fakeTime() },
-        { name: files[1], timestamp: fakeTime() },
+        { name: files[files.length - 1], timestamp: fakeTime() },
       ];
 
-      expect(filterUp(ranMigrations, files, { pastUnran: true })).to.deep.equal([
-        files[0],
-        ...files.slice(3),
-      ]);
+      expect(filterUp(ranMigrations, files, { ignorePast: true })).to.deep.equal([]);
     });
   });
 

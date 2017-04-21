@@ -40,22 +40,22 @@ export async function run(filename, direction) {
   return { name: filename, timestamp: Date.now() };
 }
 
-export function filterUp(ranMigrations, files, { pastUnran = false, until, count }) {
+export function filterUp(ranMigrations, files, { ignorePast = false, until, count }) {
   let migrationsToRun;
 
   if (!ranMigrations.length) {
     // We have no ran migrations, run them all!
     migrationsToRun = files;
-  } else if (pastUnran) {
-    // In this scenario, we just want to grab all of the unran migrations
-    migrationsToRun = files.filter(file =>
-      !ranMigrations.find(migration => file === migration.name)
-    );
-  } else {
+  } else if (ignorePast) {
+    // Only grab migrations since the most recently ran
     const timestamp = ranMigrations[0].name.match(/^(\d+)-/)[1];
-    // Grab the most recently ran migration
     migrationsToRun = files.filter(filename =>
       filename.match(/^(\d+)-/)[1] > timestamp
+    );
+  } else {
+    // Grab all of the unran migrations
+    migrationsToRun = files.filter(file =>
+      !ranMigrations.find(migration => file === migration.name)
     );
   }
 
@@ -119,7 +119,7 @@ export async function framework(direction, name, options) {
   const migrationsToRun = await needsToRun(
     direction,
     {
-      pastUnran: UP ? options.pastUnran : undefined,
+      ignorePast: UP ? options.ignorePast : undefined,
       until: typeof nameValue !== 'number' ? nameValue : null,
       count: typeof nameValue === 'number' ? nameValue : null,
     }

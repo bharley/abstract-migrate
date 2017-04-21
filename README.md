@@ -113,9 +113,8 @@ given migration has been run.
 
     $ am up
 
-This command will run all of the unran migrations. By default, this won't run migrations which are
-older than the most previously applied migration. This behavior can be modified with the
-`--past-unran` (`-p`) flag.
+This command will run all of the unran migrations. You can pass the `--ignore-past` (`-p`) to not
+run migrations that are older than the most recently successful migration. 
 
 You can specify a migration name to migrate _up to and including_ the named migration:
 
