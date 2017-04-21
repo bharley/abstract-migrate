@@ -14,6 +14,10 @@ Install with `yarn`:
 
 Now you can execute the provided CLI interface:
 
+    $ abstract-migrate --help
+
+or
+
     $ am --help
 
 ### Create an Engine
@@ -136,3 +140,10 @@ name to migrate _down to and including_ the named migration:
     $ am down 1492708337968-my-cool-migration
 
 You can pass the `--dry-run` (`-d`) flag to preview which migrations will be run down.
+
+#### rollback
+
+    $ am rollback
+
+This command will undo the most recently applied set of migrations. You can pass the `--dry-run`
+(`-d`) flag to preview which migrations will be run down.

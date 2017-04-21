@@ -1,8 +1,7 @@
 import program from 'commander';
-import chalk from 'chalk';
 import actionWrapper from './action';
 import config, { loadConfig } from './config';
-import { create, down, list, up } from './commands';
+import { create, down, list, rollback, up } from './commands';
 
 function setSetting(settingName, valueToSet) {
   return function applySetting(value) {
@@ -40,6 +39,12 @@ program
   .description('runs the migrations down to and including the named one or specified count')
   .option('-d, --dry-run', 'lists the migrations that will be executed')
   .action(actionWrapper(down));
+
+program
+  .command('rollback')
+  .description('runs down the last set of migrations that were ran')
+  .option('-d, --dry-run', 'lists the migrations that will be executed')
+  .action(actionWrapper(rollback));
 
 program
   .command('list')

@@ -8,6 +8,7 @@ import { mapSeries, promiseback } from './promise';
 
 export const DIRECTION_UP = 'direction/up';
 export const DIRECTION_DOWN = 'direction/down';
+export const DIRECTION_ROLLBACK = 'direction/rollback';
 
 export async function loadFromFs(migrationPath) {
   return new Promise((resolve, reject) => {
@@ -26,18 +27,18 @@ export async function loadFromFs(migrationPath) {
   });
 }
 
-export async function run(filename, direction) {
+export async function run(filename, direction, timestamp) {
   const migration = require(path.join(config.migrationPath, filename));
 
   if (direction === DIRECTION_UP) {
     await promiseback(migration.up);
-  } else if (direction === DIRECTION_DOWN) {
+  } else if (direction === DIRECTION_DOWN || direction === DIRECTION_ROLLBACK) {
     await promiseback(migration.down);
   } else {
     throw new Error('Unknown migration direction');
   }
 
-  return { name: filename, timestamp: Date.now() };
+  return { name: filename, timestamp };
 }
 
 export function filterUp(ranMigrations, files, { ignorePast = false, until, count }) {
@@ -95,6 +96,30 @@ export function filterDown(ranMigrations, files, { until, count }) {
   return migrationsToRun;
 }
 
+export function filterRollback(ranMigrations, files) {
+  if (!ranMigrations || !ranMigrations.length) {
+    return [];
+  }
+
+  const ranMigrationsByDate = ranMigrations
+    .slice()
+    .sort(({ timestamp: left }, { timestamp: right }) => right - left);
+
+  const migrationsToRun = ranMigrationsByDate
+    .filter(({ timestamp }) => timestamp === ranMigrationsByDate[0].timestamp)
+    .map(({ name }) => name)
+    .sort()
+    .reverse();
+
+  migrationsToRun.forEach((migration) => {
+    if (files.indexOf(migration) === -1) {
+      throw new Error(`Migration '${migration}' cannot be downgraded because it does not have a migration file`);
+    }
+  });
+
+  return migrationsToRun;
+}
+
 export async function needsToRun(direction, options) {
   // Fetch the migrations we've ran and the ones that are available
   const ranMigrations = await storage.load();
@@ -104,20 +129,42 @@ export async function needsToRun(direction, options) {
 
   const files = await loadFromFs(config.migrationPath);
 
-  if (direction === DIRECTION_UP) {
-    return filterUp(ranMigrations, files, options);
-  }
-  if (direction === DIRECTION_DOWN) {
-    return filterDown(ranMigrations, files, options);
-  }
+  switch (direction) {
+    case DIRECTION_UP:
+      return filterUp(ranMigrations, files, options);
 
-  throw new Error(`Unknown migration direct '${direction}`);
+    case DIRECTION_DOWN:
+      return filterDown(ranMigrations, files, options);
+
+    case DIRECTION_ROLLBACK:
+      return filterRollback(ranMigrations, files, options);
+
+    default:
+      throw new Error(`Unknown migration direct '${direction}`);
+  }
 }
 
+
+const wordMap = {
+  intro: {
+    [DIRECTION_UP]: 'Running migrations',
+    [DIRECTION_DOWN]: 'Running down migrations',
+    [DIRECTION_ROLLBACK]: 'Rolling back migrations',
+  },
+
+  nothing: {
+    [DIRECTION_UP]: 'There are no pending migrations',
+    [DIRECTION_DOWN]: 'There are no migrations to run down',
+    [DIRECTION_ROLLBACK]: 'There are no migrations to roll back',
+  },
+};
+const mapWords = direction => topic => wordMap[topic][direction];
+
 export async function framework(direction, name, options) {
+  const t = mapWords(direction);
   const UP = direction === DIRECTION_UP;
 
-  console.log(chalk.gray(UP ? 'Running migrations' : 'Running down migrations'));
+  console.log(chalk.gray(t('intro')));
 
   const nameValue = nameOrNumber(name);
   const migrationsToRun = await needsToRun(
@@ -130,7 +177,7 @@ export async function framework(direction, name, options) {
   );
 
   if (!migrationsToRun.length) {
-    console.log(UP ? 'There are no pending migrations' : 'There are no migrations to run down');
+    console.log(t('nothing'));
     return;
   }
 
@@ -157,12 +204,15 @@ export async function framework(direction, name, options) {
   }
 
   try {
+    // Record time once so rollback functions properly
+    const now = Date.now();
+
     // Run the migrations serially
     const ranMigrations = await mapSeries(
       migrationsToRun,
       async (file) => {
         try {
-          const migration = await run(file, direction);
+          const migration = await run(file, direction, now);
           console.log('[✓] ' + chalk.cyan(file));
           return migration;
         } catch (err) {

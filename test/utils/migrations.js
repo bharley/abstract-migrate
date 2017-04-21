@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { expect } from 'chai';
 import faker from 'faker';
-import { loadFromFs, filterUp, filterDown } from '../../src/util/migrations';
+import { loadFromFs, filterUp, filterDown, filterRollback } from '../../src/util/migrations';
 
 function fakeTime() {
   return faker.date.recent().getTime();
@@ -253,6 +253,39 @@ describe('utils/migrations', () => {
 
       const wrapper = () => filterDown(ranMigrations, files, { count: 20 });
       expect(wrapper).to.throw(Error);
+    });
+  });
+
+  describe('filterRollback', () => {
+    it('should not fail when no migrations have been ran', () => {
+      expect(filterRollback([], [], {})).to.deep.equal([]);
+    });
+
+    it('should only select the most recently ran migration', () => {
+      const files = mn(3);
+      const ranMigrations = [
+        { name: files[1], timestamp: 1492792283207 },
+        { name: files[0], timestamp: 1492768494310 },
+        { name: files[2], timestamp: 1492530783992 },
+      ];
+      expect(filterRollback(ranMigrations, files, {})).to.deep.equal([files[1]]);
+    });
+
+    it('should select all migrations that were ran at the same time', () => {
+      const files = mn(5);
+      const ranTime = fakeTime();
+      const ranMigrations = [
+        { name: files[4], timestamp: ranTime },
+        { name: files[1], timestamp: ranTime },
+        { name: files[0], timestamp: ranTime - 5000 },
+        { name: files[3], timestamp: ranTime },
+        { name: files[2], timestamp: ranTime - 10000 },
+      ];
+      expect(filterRollback(ranMigrations, files, {})).to.deep.equal([
+        files[4],
+        files[3],
+        files[1],
+      ]);
     });
   });
 });
