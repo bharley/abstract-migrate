@@ -81,7 +81,6 @@ configuration file accepts the following options:
 
  - **engine**: The migration storage engine to use
  - **require**: A JavaScript file (or array of files) to require before running
- - **timeout**: The amount of time before a promise will timeout in ms (default: `30000`)
  - **noColor**: Disables color output (default: `false`)
  - **migrationPath**: The directory where migration files are stored (default: `migrations`)
 

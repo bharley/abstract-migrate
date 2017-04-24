@@ -6,7 +6,6 @@ class Config {
     debug: false,
     migrationPath: path.resolve('migrations'),
     require: [],
-    timeout: 30 * 1000,
   };
 
   init(overrides) {
@@ -50,9 +49,6 @@ const configStorage = new Proxy(new Config(), {
           ...value,
         ];
         return true;
-      case 'timeout':
-        target.config.timeout = parseInt(value, 10);
-        return !isNaN(target.config.timeout);
       case 'noColor':
         chalk.enabled = !value;
         return true;

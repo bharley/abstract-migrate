@@ -16,7 +16,6 @@ program
   .option('-r, --require <file>', 'require file before running', setSetting('require'))
   .option('-e, --engine <module>', 'the storage engine', setSetting('engine'))
   .option('-C, --no-color', 'turn off color output', setSetting('noColor', true))
-  .option('-t, --timeout <ms>', 'timeout for node-style callbacks', setSetting('timeout'))
   .option('--debug', 'more verbose output', setSetting('debug', true));
 
 program

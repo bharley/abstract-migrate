@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { mapSeries } from '../../src/util/promise';
+import { mapSeries, promiseback } from '../../src/util/promise';
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const now = () => new Date().valueOf();
@@ -22,6 +22,24 @@ describe('utils/promise', () => {
       results.forEach(([n, delta]) => {
         expect(delta).to.be.closeTo(n * 100, 20);
       });
+    });
+  });
+
+  describe('promiseback', () => {
+    it('should support node-style callbacks', async () => {
+      const thinkAboutColors = (callback) => {
+        sleep(25).then(() => callback(null, 'blue'));
+      };
+      const favoriteColor = await promiseback(thinkAboutColors);
+
+      expect(favoriteColor).to.equal('blue');
+    });
+
+    it('should support Promises', async () => {
+      const thinkAboutColors = () => sleep(25).then(() => 'blue');
+      const favoriteColor = await promiseback(thinkAboutColors);
+
+      expect(favoriteColor).to.equal('blue');
     });
   });
 });
