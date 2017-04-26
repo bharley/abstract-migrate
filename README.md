@@ -127,6 +127,10 @@ or specifying the number of migrations to apply:
 
     $ am up 2
 
+or specifying exactly one migration to apply:
+
+    $ am up --only 1492708337968-my-cool-migration
+
 You can pass the `--dry-run` (`-d`) flag to preview which migrations will be run.
 
 #### down
@@ -137,6 +141,10 @@ This command will roll back the specified number of migrations. You can also spe
 name to migrate _down to and including_ the named migration:
 
     $ am down 1492708337968-my-cool-migration
+
+or specifying exactly one migration to run down:
+
+    $ am down --only 1492708337968-my-cool-migration
 
 You can pass the `--dry-run` (`-d`) flag to preview which migrations will be run down.
 

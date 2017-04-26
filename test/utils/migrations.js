@@ -165,6 +165,27 @@ describe('utils/migrations', () => {
 
       expect(filterUp(ranMigrations, files, { ignorePast: true })).to.deep.equal([]);
     });
+
+    it('should only run the named migration when using --only', () => {
+      const files = mn(10);
+      const ranMigrations = [
+        { name: files[0], timestamp: fakeTime() },
+        { name: files[files.length - 1], timestamp: fakeTime() },
+      ];
+
+      const output = filterUp(ranMigrations, files, { only: true, until: files[4] });
+      expect(output).to.deep.equal([files[4]]);
+    });
+
+    it('should require a filename when using the --only flag', () => {
+      const files = mn(10);
+      const ranMigrations = [
+        { name: files[1], timestamp: fakeTime() },
+      ];
+
+      const wrapper = () => filterUp(ranMigrations, files, { only: true });
+      expect(wrapper).to.throw(Error);
+    });
   });
 
   describe('filterDown', () => {
@@ -252,6 +273,28 @@ describe('utils/migrations', () => {
       ];
 
       const wrapper = () => filterDown(ranMigrations, files, { count: 20 });
+      expect(wrapper).to.throw(Error);
+    });
+
+    it('should only run down the named migration when using --only', () => {
+      const files = mn(10);
+      const ranMigrations = [
+        { name: files[0], timestamp: fakeTime() },
+        { name: files[3], timestamp: fakeTime() },
+        { name: files[files.length - 1], timestamp: fakeTime() },
+      ];
+
+      const output = filterDown(ranMigrations, files, { only: true, until: files[3] });
+      expect(output).to.deep.equal([files[3]]);
+    });
+
+    it('should require a migration name when using the --only flag', () => {
+      const files = mn(10);
+      const ranMigrations = [
+        { name: files[1], timestamp: fakeTime() },
+      ];
+
+      const wrapper = () => filterDown(ranMigrations, files, { only: true });
       expect(wrapper).to.throw(Error);
     });
   });

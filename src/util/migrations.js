@@ -41,7 +41,7 @@ export async function run(filename, direction, timestamp) {
   return { name: filename, timestamp };
 }
 
-export function filterUp(ranMigrations, files, { ignorePast = false, until, count }) {
+export function filterUp(ranMigrations, files, { ignorePast = false, until, count, only }) {
   let migrationsToRun;
 
   if (!ranMigrations.length) {
@@ -60,6 +60,15 @@ export function filterUp(ranMigrations, files, { ignorePast = false, until, coun
     );
   }
 
+  // If we're requesting a specific migration, check for validity and return
+  if (only) {
+    if (!until) {
+      throw new Error('A migration name must be provided with the --only flag');
+    }
+
+    return migrationsToRun.filter(file => file === until);
+  }
+
   if (until) {
     return migrationsToRun.filter(file => file <= until);
   }
@@ -71,13 +80,19 @@ export function filterUp(ranMigrations, files, { ignorePast = false, until, coun
   return migrationsToRun;
 }
 
-export function filterDown(ranMigrations, files, { until, count }) {
+export function filterDown(ranMigrations, files, { until, count, only }) {
   if (!ranMigrations) {
     return [];
   }
 
   let migrationsToRun;
-  if (count) {
+  if (only) {
+    if (!until) {
+      throw new Error('A migration name must be provided with the --only flag');
+    }
+
+    migrationsToRun = ranMigrations.filter(({ name }) => name === until);
+  } else if (count) {
     migrationsToRun = ranMigrations.slice(0, count);
   } else if (until) {
     migrationsToRun = ranMigrations.filter(({ name }) => name >= until);
@@ -185,6 +200,7 @@ export async function framework(direction, name, options) {
       direction,
       {
         ignorePast: UP ? options.ignorePast : undefined,
+        only: !!options.only,
         until: typeof nameValue !== 'number' ? nameValue : null,
         count: typeof nameValue === 'number' ? nameValue : null,
       }

@@ -31,12 +31,14 @@ program
     'ignore old migrations from the past that have not ran yet'
   )
   .option('-d, --dry-run', 'lists the migrations that will be executed')
+  .option('-o, --only', 'only run the specified migration')
   .action(actionWrapper(up));
 
 program
   .command('down <migration|num>')
   .description('runs the migrations down to and including the named one or specified count')
   .option('-d, --dry-run', 'lists the migrations that will be executed')
+  .option('-o, --only', 'only run the specified migration')
   .action(actionWrapper(down));
 
 program
